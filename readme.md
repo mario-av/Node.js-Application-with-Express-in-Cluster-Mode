@@ -9,14 +9,13 @@
 ## Table of Contents
 
 1. [Introduction](#1-introduction)
-   1.1. [A Quick Look at Clusters](#11-a-quick-look-at-clusters)
+   - 1.1. [A Quick Look at Clusters](#11-a-quick-look-at-clusters)
 2. [Using Clusters](#2-using-clusters)
-   2.1. [First Without Cluster](#21-first-without-cluster)
-   2.2. [Now with More Cluster!](#22-now-with-more-cluster)
+   - 2.1. [First Without Cluster](#21-first-without-cluster)
+   - 2.2. [Now with More Cluster!](#22-now-with-more-cluster)
 3. [Performance Metrics](#3-performance-metrics)
 4. [Using PM2 to Manage a Node.js Cluster](#4-using-pm2-to-manage-a-nodejs-cluster)
 5. [Questions](#5-questions)
-6. [References](#6-references)
 
 ---
 
@@ -198,14 +197,24 @@ We can use `ecosystem.config.js` to define the configuration.
 
 ## 5. Questions
 
+**Task: Investigate the following commands and explain what terminal output they offer and what they are used for:**
+
+1.  **`pm2 ls`**:
+    - **Usage**: Displays a list of all processes managed by PM2.
+    - **Output**: A table showing the process ID (id), name, mode (fork/cluster), status (online/stopped), restarts count, uptime, CPU usage, and memory usage.
+
+2.  **`pm2 logs`**:
+    - **Usage**: Shows real-time logs of the applications.
+    - **Output**: Streams standard output (stdout) and error output (stderr) from all running processes, useful for debugging and monitoring activity.
+
+3.  **`pm2 monit`**:
+    - **Usage**: Launches a real-time monitoring dashboard in the terminal.
+    - **Output**: An interactive interface showing CPU and Memory usage per process, along with real-time logs and metadata for the selected process.
+
 **Could you say why in some specific cases, like this one, the non-clustered application has better results?**
 
-In very light and fast operations (very small n), the overhead (extra cost) of managing Inter-Process Communication (IPC) and the cluster load distribution can exceed the benefit of having multiple threads. A single thread is extremely efficient for simple I/O tasks or trivial calculations, so purely in terms of latency for trivial requests, it might sometimes show slightly better metrics, although the cluster offers greater robustness under heavy load/concurrency.
+In very light and fast operations, where the number of tasks is very small, the extra cost of managing Inter-Process Communication (IPC) and the cluster load distribution can outweigh the benefits of using multiple threads.
+
+A single thread works well for simple I/O tasks or basic calculations. For trivial requests, it may occasionally show slightly better performance in terms of latency. However, the cluster provides greater reliability when dealing with heavy load or many concurrent tasks.
 
 ---
-
-## 6. References
-
-1. How to install ExpressJS on Debian/Ubuntu?
-2. Improving Node.js Application Performance With Clustering
-3. PM2 Documentation
