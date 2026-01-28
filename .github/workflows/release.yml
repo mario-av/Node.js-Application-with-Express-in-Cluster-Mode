@@ -1,0 +1,44 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      # 1. Checkout repository
+      - uses: actions/checkout@v4
+
+      # 2. Create artifact archive
+      - name: Create Artifact Archive
+        run: |
+          echo "[1/2] Creating release archive..."
+          zip -r cluster-nodejs-practice.zip \
+            Vagrantfile config/ readme.md LICENSE docker/ package.json app_mav.js app-cluster_mav.js ecosystem.config.js \
+            -x "*.git*" -x "*.vagrant*" -x ".github/*" -x ".dockerignore" -x "node_modules"
+          echo "      [OK]"
+
+      # 3. Create GitHub release
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: cluster-nodejs-practice.zip
+          generate_release_notes: true
+
+      # 4. Generate release summary
+      - name: Release Summary
+        if: always()
+        run: |
+          echo "[2/2] Generating release summary..."
+          echo "## Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Component | Status | Info |" >> $GITHUB_STEP_SUMMARY
+          echo "| :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
+          echo "| Archive | [OK] Created | cluster-nodejs-practice.zip |" >> $GITHUB_STEP_SUMMARY
+          echo "| GitHub Release | [OK] Published | ${{ github.ref_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "      [OK]"

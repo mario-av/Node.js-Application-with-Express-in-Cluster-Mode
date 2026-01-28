@@ -1,0 +1,71 @@
+name: Package and Build Docker
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    # 1. Checkout repository
+    - uses: actions/checkout@v3
+
+    # 2. Login to container registry
+    - name: Log in to Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    # 3. Build and push images
+    - name: Build and Publish
+      id: build_push
+      run: |
+        OWNER="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
+        
+        echo "[1/4] Building multi-stage image..."
+        docker build -t ghcr.io/$OWNER/cluster-nodejs-multistage:latest -f docker/Dockerfile.multistage .
+        echo "      [OK]"
+        
+        echo "[2/4] Pushing multi-stage image..."
+        docker push ghcr.io/$OWNER/cluster-nodejs-multistage:latest
+        echo "MULTI_STATUS=PASS" >> $GITHUB_ENV
+        echo "      [OK]"
+
+        echo "[3/4] Building single-stage image..."
+        docker build -t ghcr.io/$OWNER/cluster-nodejs-singlestage:latest -f docker/Dockerfile.singlestage .
+        echo "      [OK]"
+        
+        echo "[4/4] Pushing single-stage image..."
+        docker push ghcr.io/$OWNER/cluster-nodejs-singlestage:latest
+        echo "SINGLE_STATUS=PASS" >> $GITHUB_ENV
+        echo "      [OK]"
+
+    # 4. Generate build summary
+    - name: Build Summary
+      if: always()
+      run: |
+        echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "| Artifact | Type | Status |" >> $GITHUB_STEP_SUMMARY
+        echo "| :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "$MULTI_STATUS" == "PASS" ]; then
+             echo "| Docker Image | Multi-stage | [OK] Published |" >> $GITHUB_STEP_SUMMARY
+        else
+             echo "| Docker Image | Multi-stage | [FAIL] Error |" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        if [ "$SINGLE_STATUS" == "PASS" ]; then
+             echo "| Docker Image | Single-stage | [OK] Published |" >> $GITHUB_STEP_SUMMARY
+        else
+             echo "| Docker Image | Single-stage | [FAIL] Error |" >> $GITHUB_STEP_SUMMARY
+        fi

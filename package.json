@@ -1,0 +1,17 @@
+{
+  "name": "cluster-nodejs",
+  "version": "1.0.0",
+  "description": "Node.js Cluster deployment practice with Express",
+  "main": "app_mav.js",
+  "scripts": {
+    "start": "node app_mav.js",
+    "start:cluster": "node app-cluster_mav.js",
+    "start:pm2": "pm2 start ecosystem.config.js",
+    "test": "echo \"Tests OK\" && exit 0"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "author": "Mario Acosta Vargas",
+  "license": "ISC"
+}

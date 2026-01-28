@@ -1,0 +1,28 @@
+# 1. Single-stage Dockerfile for Node.js Cluster App
+
+# 2. Base Image
+FROM node:18-bullseye-slim
+
+# 3. Metadata label
+LABEL version="1.0.0"
+
+# 4. Install global tools
+RUN npm install -g loadtest pm2
+
+# 5. Set working directory
+WORKDIR /app
+
+# 6. Copy package files
+COPY package*.json ./
+
+# 7. Install dependencies
+RUN npm install --production
+
+# 8. Copy application code
+COPY app_mav.js app-cluster_mav.js ecosystem.config.js ./
+
+# 9. Expose port
+EXPOSE 3000
+
+# 10. Run Application default without cluster
+CMD ["node", "app_mav.js"]

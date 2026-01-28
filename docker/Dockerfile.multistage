@@ -1,0 +1,42 @@
+# 1. Stage 1 Builder
+FROM node:18-bullseye-slim as builder
+
+# 2. Set Working Directory
+WORKDIR /app
+
+# 3. Copy package files
+COPY package*.json ./
+
+# 4. Install all dependencies
+RUN npm install
+
+# 5. Prune dev dependencies
+RUN npm prune --production
+
+# 6. Stage 2 Final Image
+FROM node:18-bullseye-slim
+
+# 7. Metadata label
+LABEL version="1.0.0"
+
+# 8. Install PM2 globally
+RUN npm install -g pm2
+
+# 9. Set Working Directory
+WORKDIR /app
+
+# 10. Copy dependencies from builder
+COPY --from=builder /app/node_modules ./node_modules
+
+# 11. Copy application code
+COPY app_mav.js app-cluster_mav.js ecosystem.config.js package.json ./
+
+# 12. Create non-root user
+RUN useradd -m appuser
+USER appuser
+
+# 13. Expose Port
+EXPOSE 3000
+
+# 14. Run Application with PM2 in cluster mode
+CMD ["pm2-runtime", "ecosystem.config.js"]

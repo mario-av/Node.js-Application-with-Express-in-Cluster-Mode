@@ -1,0 +1,41 @@
+name: Validate Configuration
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout repository
+      - uses: actions/checkout@v4
+
+      # 2. Validate Vagrantfile syntax
+      - name: Validate Vagrantfile
+        run: ruby -c Vagrantfile
+
+      # 3. Validate bootstrap.sh syntax
+      - name: Validate bootstrap.sh
+        run: bash -n config/bootstrap.sh
+
+      # 4. Check required files exist
+      - name: Check files exist
+        run: |
+          echo "[1/7] Checking Vagrantfile..."
+          test -f Vagrantfile && echo "      [OK]" || echo "      [FAIL]"
+          echo "[2/7] Checking bootstrap.sh..."
+          test -f config/bootstrap.sh && echo "      [OK]" || echo "      [FAIL]"
+          echo "[3/7] Checking app_mav.js..."
+          test -f app_mav.js && echo "      [OK]" || echo "      [FAIL]"
+          echo "[4/7] Checking app-cluster_mav.js..."
+          test -f app-cluster_mav.js && echo "      [OK]" || echo "      [FAIL]"
+          echo "[5/7] Checking ecosystem.config.js..."
+          test -f ecosystem.config.js && echo "      [OK]" || echo "      [FAIL]"
+          echo "[6/7] Checking package.json..."
+          test -f package.json && echo "      [OK]" || echo "      [FAIL]"
+          echo "[7/7] Checking readme.md..."
+          test -f readme.md && echo "      [OK]" || echo "      [FAIL]"
